@@ -103,6 +103,34 @@
 
   .error { color: #ff3333; }
 
+  .start-btn {
+    display: block;
+    margin: 24px auto 0;
+    padding: 14px 32px;
+    background: transparent;
+    border: 2px solid #33ff33;
+    color: #33ff33;
+    font-family: inherit;
+    font-size: 14px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s;
+    animation: btnPulse 2s ease-in-out infinite;
+  }
+
+  .start-btn:hover,
+  .start-btn:active {
+    background: #33ff33;
+    color: #0a0a0a;
+    box-shadow: 0 0 30px #33ff33;
+  }
+
+  @keyframes btnPulse {
+    0%, 100% { box-shadow: 0 0 0 rgba(51,255,51,0); }
+    50%      { box-shadow: 0 0 20px rgba(51,255,51,0.6); }
+  }
+
   .input-line {
     display: flex;
     align-items: center;
@@ -428,6 +456,12 @@
     .line { font-size: 12px; margin-bottom: 6px; }
     input[type="text"] { font-size: 16px; letter-spacing: 1px; }
 
+    .start-btn {
+      font-size: 12px;
+      padding: 12px 24px;
+      letter-spacing: 2px;
+    }
+
     .trailer { padding: 16px; }
     .trailer-line { letter-spacing: 0.1em; }
 
@@ -477,6 +511,9 @@
 <div id="terminalScreen">
   <div class="terminal">
     <div id="output"></div>
+
+    <button class="start-btn" id="startBtn">▶ ЗАПУСТИТЬ СИСТЕМУ</button>
+
     <div class="input-line" id="loginScreen" style="display:none;">
       <span class="prompt">></span>
       <input type="text" id="passwordInput" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="введите пароль...">
@@ -499,9 +536,14 @@
   <div class="skip" id="skip">Пропустить ▸</div>
   <div class="mute" id="mute">🔇 MUTE</div>
 
-  <!-- Музыка: файл Start.mp3 рядом с index.html -->
+  <!-- Музыка: стартует только на финальном экране -->
   <audio id="bgMusic" loop>
     <source src="Start.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- Фоновый эмбиент терминала -->
+  <audio id="terminalAmbient" loop>
+    <source src="terminal-ambient.mp3" type="audio/mpeg">
   </audio>
 
   <div class="final" id="final">
@@ -526,6 +568,9 @@
 </div>
 
 <script>
+  /* ============================================
+     НАСТРОЙКИ
+     ============================================ */
   const PASSWORD = 'днюха';
 
   const BOOT_LINES = [
@@ -538,23 +583,110 @@
     ''
   ];
 
-  // Задержки трейлера — меняй под себя
+  // Строки трейлера: текст, озвучка, задержка
+  // vibration — паттерн вибрации на мобилке (в миллисекундах)
   const LINES = [
-    { text: 'В этом году...',  delay: 1800 },
-    { text: 'Одна ночь...',    delay: 1800 },
-    { text: 'Изменит всё...',  delay: 2200 },
-    { text: '',                delay: 600  },
-    { text: 'Скоро...',        delay: 2800 }
+    { text: 'В этом году...',  voice: 'voiceover-1.mp3', delay: 1800, vibration: 30 },
+    { text: 'Одна ночь...',    voice: 'voiceover-2.mp3', delay: 1800, vibration: 30 },
+    { text: 'Изменит всё...',  voice: 'voiceover-3.mp3', delay: 2200, vibration: 50 },
+    { text: '',                voice: null,              delay: 600,  vibration: 0  },
+    { text: 'Скоро...',        voice: 'voiceover-4.mp3', delay: 2800, vibration: [80, 40, 80] }
   ];
 
+  /* ============================================
+     ЭЛЕМЕНТЫ
+     ============================================ */
   const output = document.getElementById('output');
+  const startBtn = document.getElementById('startBtn');
   const loginScreen = document.getElementById('loginScreen');
   const passwordInput = document.getElementById('passwordInput');
   const terminalScreen = document.getElementById('terminalScreen');
   const glitchOverlay = document.getElementById('glitchOverlay');
+  const terminalAmbient = document.getElementById('terminalAmbient');
 
   let wrongAttempts = 0;
+  let terminalStarted = false;
 
+  /* ============================================
+     ВИБРАЦИЯ (только на мобилке)
+     ============================================ */
+  const canVibrate = ('vibrate' in navigator);
+
+  function vibrate(pattern) {
+    if (!canVibrate) return;
+    // Паттерн может быть числом или массивом
+    if (pattern && pattern !== 0) {
+      try { navigator.vibrate(pattern); } catch (e) {}
+    }
+  }
+
+  /* ============================================
+     ПЛАВНОЕ ЗАТУХАНИЕ ЗВУКА
+     ============================================ */
+  function fadeOutAudio(audioEl, duration = 400, onComplete) {
+    if (!audioEl || audioEl.paused) {
+      if (onComplete) onComplete();
+      return;
+    }
+
+    const startVol = audioEl.volume;
+    const steps = 20;
+    const stepTime = duration / steps;
+    let step = 0;
+
+    const fade = setInterval(() => {
+      step++;
+      audioEl.volume = Math.max(0, startVol * (1 - step / steps));
+      if (step >= steps) {
+        clearInterval(fade);
+        audioEl.pause();
+        audioEl.volume = startVol; // возвращаем на случай повторного запуска
+        if (onComplete) onComplete();
+      }
+    }, stepTime);
+  }
+
+  /* ============================================
+     ПРЕДЗАГРУЗКА ОЗВУЧЕК
+     ============================================ */
+  function preloadVoices() {
+    LINES.forEach(item => {
+      if (item.voice) {
+        const a = new Audio();
+        a.preload = 'auto';
+        a.src = item.voice;
+      }
+    });
+  }
+  preloadVoices();
+
+  /* ============================================
+     КНОПКА ЗАПУСКА ТЕРМИНАЛА
+     ============================================ */
+  startBtn.addEventListener('click', () => {
+    if (terminalStarted) return;
+    terminalStarted = true;
+
+    // Короткая вибрация на нажатие
+    vibrate(20);
+
+    startBtn.style.display = 'none';
+
+    // Запускаем фоновый эмбиент терминала (loop)
+    terminalAmbient.volume = 0.25;
+    terminalAmbient.play().catch(() => {});
+
+    typeLines(BOOT_LINES, () => {
+      loginScreen.style.display = 'flex';
+      if (window.matchMedia('(hover: hover)').matches) {
+        passwordInput.focus();
+      }
+    });
+  });
+
+  /* ============================================
+     ПЕЧАТЬ (без звука печати, эмбиент играет сам)
+     ============================================ */
   function typeLines(lines, callback) {
     let i = 0;
     function nextLine() {
@@ -568,6 +700,7 @@
 
       let j = 0;
       const text = lines[i];
+
       const interval = setInterval(() => {
         line.textContent = text.slice(0, j + 1);
         j++;
@@ -582,13 +715,9 @@
     nextLine();
   }
 
-  typeLines(BOOT_LINES, () => {
-    loginScreen.style.display = 'flex';
-    if (window.matchMedia('(hover: hover)').matches) {
-      passwordInput.focus();
-    }
-  });
-
+  /* ============================================
+     ПРОВЕРКА ПАРОЛЯ
+     ============================================ */
   passwordInput.addEventListener('keydown', (e) => {
     if (e.key !== 'Enter') return;
 
@@ -596,22 +725,18 @@
     passwordInput.value = '';
 
     if (value === PASSWORD.toLowerCase()) {
-      // === МУЗЫКА: запускаем СРАЗУ при нажатии Enter (обход автоплея) ===
-      const music = document.getElementById('bgMusic');
-      music.volume = 0.4;
-      music.currentTime = 0;  // старт с 0 сек — поменяй на нужную секунду
-      music.play().catch(() => {});
+      // Короткая вибрация на успех
+      vibrate(40);
 
-      // Плавный fade-in громкости
-      let vol = 0;
-      const fadeIn = setInterval(() => {
-        vol += 0.02;
-        music.volume = Math.min(vol, 0.4);
-        if (vol >= 0.4) clearInterval(fadeIn);
-      }, 50);
-
+      // Плавно гасим эмбиент терминала перед переходом
+      fadeOutAudio(terminalAmbient, 400, () => {
+        terminalAmbient.pause();
+      });
       triggerTransition();
     } else {
+      // Двойная вибрация на ошибку
+      vibrate([40, 60, 40]);
+
       wrongAttempts++;
       const err = document.createElement('div');
       err.className = 'line error';
@@ -631,6 +756,9 @@
     }
   });
 
+  /* ============================================
+     ПЕРЕХОД ТЕРМИНАЛ → ТРЕЙЛЕР
+     ============================================ */
   function triggerTransition() {
     const ok = document.createElement('div');
     ok.className = 'line';
@@ -655,6 +783,9 @@
     }, 1200);
   }
 
+  /* ============================================
+     ЗЕРНО
+     ============================================ */
   const grainCanvas = document.getElementById('grainCanvas');
   const gctx = grainCanvas.getContext('2d', { alpha: true });
   let grainRunning = false;
@@ -680,22 +811,17 @@
       const data = imageData.data;
       for (let i = 0; i < data.length; i += 4) {
         const v = Math.random() * 255;
-        data[i] = v;
-        data[i + 1] = v;
-        data[i + 2] = v;
-        data[i + 3] = 255;
+        data[i] = v; data[i + 1] = v; data[i + 2] = v; data[i + 3] = 255;
       }
       gctx.putImageData(imageData, 0, 0);
     }
     requestAnimationFrame(drawGrain);
   }
+  function startGrain() { if (grainRunning) return; grainRunning = true; drawGrain(); }
 
-  function startGrain() {
-    if (grainRunning) return;
-    grainRunning = true;
-    drawGrain();
-  }
-
+  /* ============================================
+     ТРЕЙЛЕР
+     ============================================ */
   const trailerContent = document.getElementById('trailerContent');
   const trailer = document.getElementById('trailer');
   const final = document.getElementById('final');
@@ -707,6 +833,7 @@
 
   let currentLine = 0;
   let skipped = false;
+  const voicePlayer = new Audio();
 
   function startTrailer() {
     currentLine = 0;
@@ -716,45 +843,104 @@
 
   function showNextLine() {
     if (skipped) return;
+
     if (currentLine >= LINES.length) {
       showFinal();
       return;
     }
+
     const item = LINES[currentLine];
+
+    // 1. Вибрация на появление строки
+    if (item.vibration) {
+      vibrate(item.vibration);
+    }
+
+    // 2. Показываем визуальную строку
     const line = document.createElement('div');
     line.className = 'trailer-line';
     line.textContent = item.text;
     trailerContent.innerHTML = '';
     trailerContent.appendChild(line);
+
+    // 3. Параллельно запускаем озвучку
+    if (item.voice) {
+      voicePlayer.pause();
+      voicePlayer.src = item.voice;
+      voicePlayer.volume = 0.9;
+      voicePlayer.currentTime = 0;
+
+      const playPromise = voicePlayer.play();
+      if (playPromise) playPromise.catch(() => {
+        // Если браузер блокирует — пробуем ещё раз через 100 мс
+        setTimeout(() => voicePlayer.play().catch(() => {}), 100);
+      });
+    }
+
     currentLine++;
     setTimeout(showNextLine, item.delay);
   }
 
   function showFinal() {
+    // Вибрация на финал — двойной удар
+    vibrate([60, 50, 100]);
+
+    // Плавно гасим озвучку за 400 мс
+    fadeOutAudio(voicePlayer, 400);
+
     trailer.style.display = 'none';
     skip.style.display = 'none';
     final.classList.add('visible');
+
+    // === МУЗЫКА СТАРТУЕТ ЗДЕСЬ — ровно в момент появления «Билета» ===
+    // Небольшая задержка, чтобы голос успел затихнуть
+    setTimeout(() => {
+      music.volume = 0;
+      music.currentTime = 0;
+      music.play().catch(() => {});
+
+      // Плавный fade-in громкости до 0.4
+      let vol = 0;
+      const fadeIn = setInterval(() => {
+        vol += 0.02;
+        music.volume = Math.min(vol, 0.4);
+        if (vol >= 0.4) clearInterval(fadeIn);
+      }, 50);
+    }, 400);
   }
 
   skip.addEventListener('click', () => {
     skipped = true;
+    vibrate(30);
+    // showFinal сам сделает fade-out озвучки
     showFinal();
   });
 
+  /* ============================================
+     MUTE
+     ============================================ */
   let muted = false;
   mute.addEventListener('click', () => {
     muted = !muted;
     music.muted = muted;
+    voicePlayer.muted = muted;
+    terminalAmbient.muted = muted;
     mute.textContent = muted ? '🔊 UNMUTE' : '🔇 MUTE';
-    if (!muted && music.paused) {
+
+    if (!muted && music.paused && final.classList.contains('visible')) {
       music.play().catch(() => {});
     }
   });
 
+  /* ============================================
+     КНОПКИ ФИНАЛА
+     ============================================ */
   yesBtn.addEventListener('click', () => {
+    vibrate([30, 30, 30]);
     yesBtn.textContent = '✓ Билет забронирован';
     yesBtn.disabled = true;
     yesBtn.style.opacity = '0.7';
+    // window.open('https://t.me/username', '_blank');
   });
 
   if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
