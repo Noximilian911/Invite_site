@@ -536,14 +536,19 @@
   <div class="skip" id="skip">Пропустить ▸</div>
   <div class="mute" id="mute">🔇 MUTE</div>
 
-  <!-- Музыка: стартует только на финальном экране -->
-  <audio id="bgMusic" loop>
-    <source src="Start.mp3" type="audio/mpeg">
-  </audio>
-
   <!-- Фоновый эмбиент терминала -->
   <audio id="terminalAmbient" loop>
     <source src="terminal-ambient.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- Музыка "титров" трейлера -->
+  <audio id="trailerMusic" loop>
+    <source src="Start.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- Музыка финального экрана -->
+  <audio id="finalMusic" loop>
+    <source src="Finale.mp3" type="audio/mpeg">
   </audio>
 
   <div class="final" id="final">
@@ -583,14 +588,13 @@
     ''
   ];
 
-  // Строки трейлера: текст, озвучка, задержка
-  // vibration — паттерн вибрации на мобилке (в миллисекундах)
+  // Строки трейлера: текст, задержка, вибрация на мобилке
   const LINES = [
-    { text: 'В этом году...',  voice: 'voiceover-1.mp3', delay: 1800, vibration: 30 },
-    { text: 'Одна ночь...',    voice: 'voiceover-2.mp3', delay: 1800, vibration: 30 },
-    { text: 'Изменит всё...',  voice: 'voiceover-3.mp3', delay: 2200, vibration: 50 },
-    { text: '',                voice: null,              delay: 600,  vibration: 0  },
-    { text: 'Скоро...',        voice: 'voiceover-4.mp3', delay: 2800, vibration: [80, 40, 80] }
+    { text: 'В этом году...',  delay: 1800, vibration: 30 },
+    { text: 'Одна ночь...',    delay: 1800, vibration: 30 },
+    { text: 'Изменит всё...',  delay: 2200, vibration: 50 },
+    { text: '',                delay: 600,  vibration: 0  },
+    { text: 'Скоро...',        delay: 2800, vibration: [80, 40, 80] }
   ];
 
   /* ============================================
@@ -603,32 +607,31 @@
   const terminalScreen = document.getElementById('terminalScreen');
   const glitchOverlay = document.getElementById('glitchOverlay');
   const terminalAmbient = document.getElementById('terminalAmbient');
+  const trailerMusic = document.getElementById('trailerMusic');
+  const finalMusic = document.getElementById('finalMusic');
 
   let wrongAttempts = 0;
   let terminalStarted = false;
 
   /* ============================================
-     ВИБРАЦИЯ (только на мобилке)
+     ВИБРАЦИЯ
      ============================================ */
   const canVibrate = ('vibrate' in navigator);
-
   function vibrate(pattern) {
     if (!canVibrate) return;
-    // Паттерн может быть числом или массивом
     if (pattern && pattern !== 0) {
       try { navigator.vibrate(pattern); } catch (e) {}
     }
   }
 
   /* ============================================
-     ПЛАВНОЕ ЗАТУХАНИЕ ЗВУКА
+     ПЛАВНОЕ ЗАТУХАНИЕ
      ============================================ */
   function fadeOutAudio(audioEl, duration = 400, onComplete) {
     if (!audioEl || audioEl.paused) {
       if (onComplete) onComplete();
       return;
     }
-
     const startVol = audioEl.volume;
     const steps = 20;
     const stepTime = duration / steps;
@@ -640,25 +643,31 @@
       if (step >= steps) {
         clearInterval(fade);
         audioEl.pause();
-        audioEl.volume = startVol; // возвращаем на случай повторного запуска
+        audioEl.volume = startVol;
         if (onComplete) onComplete();
       }
     }, stepTime);
   }
 
-  /* ============================================
-     ПРЕДЗАГРУЗКА ОЗВУЧЕК
-     ============================================ */
-  function preloadVoices() {
-    LINES.forEach(item => {
-      if (item.voice) {
-        const a = new Audio();
-        a.preload = 'auto';
-        a.src = item.voice;
+  function fadeInAudio(audioEl, targetVol, duration = 1500, startFrom = 0) {
+    if (!audioEl) return;
+    audioEl.volume = 0;
+    audioEl.currentTime = startFrom;
+    audioEl.play().catch(() => {});
+
+    const steps = 30;
+    const stepTime = duration / steps;
+    let step = 0;
+
+    const fade = setInterval(() => {
+      step++;
+      audioEl.volume = Math.min(targetVol, targetVol * (step / steps));
+      if (step >= steps) {
+        audioEl.volume = targetVol;
+        clearInterval(fade);
       }
-    });
+    }, stepTime);
   }
-  preloadVoices();
 
   /* ============================================
      КНОПКА ЗАПУСКА ТЕРМИНАЛА
@@ -667,14 +676,11 @@
     if (terminalStarted) return;
     terminalStarted = true;
 
-    // Короткая вибрация на нажатие
     vibrate(20);
-
     startBtn.style.display = 'none';
 
-    // Запускаем фоновый эмбиент терминала (loop)
-    terminalAmbient.volume = 0.25;
-    terminalAmbient.play().catch(() => {});
+    // Запускаем эмбиент терминала
+    fadeInAudio(terminalAmbient, 0.25, 1000);
 
     typeLines(BOOT_LINES, () => {
       loginScreen.style.display = 'flex';
@@ -685,7 +691,7 @@
   });
 
   /* ============================================
-     ПЕЧАТЬ (без звука печати, эмбиент играет сам)
+     ПЕЧАТЬ
      ============================================ */
   function typeLines(lines, callback) {
     let i = 0;
@@ -725,18 +731,11 @@
     passwordInput.value = '';
 
     if (value === PASSWORD.toLowerCase()) {
-      // Короткая вибрация на успех
       vibrate(40);
-
-      // Плавно гасим эмбиент терминала перед переходом
-      fadeOutAudio(terminalAmbient, 400, () => {
-        terminalAmbient.pause();
-      });
+      fadeOutAudio(terminalAmbient, 500);
       triggerTransition();
     } else {
-      // Двойная вибрация на ошибку
       vibrate([40, 60, 40]);
-
       wrongAttempts++;
       const err = document.createElement('div');
       err.className = 'line error';
@@ -757,7 +756,7 @@
   });
 
   /* ============================================
-     ПЕРЕХОД ТЕРМИНАЛ → ТРЕЙЛЕР
+     ПЕРЕХОД
      ============================================ */
   function triggerTransition() {
     const ok = document.createElement('div');
@@ -779,6 +778,12 @@
 
         startTrailer();
         startGrain();
+
+        // === МУЗЫКА ТРЕЙЛЕРА СТАРТУЕТ ЗДЕСЬ (параллельно с первой строкой)
+        // Небольшая задержка, чтобы глитч "успокоился"
+        setTimeout(() => {
+          fadeInAudio(trailerMusic, 0.35, 2000);
+        }, 500);
       }, 900);
     }, 1200);
   }
@@ -829,11 +834,9 @@
   const yesBtn = document.getElementById('yesBtn');
   const noBtn = document.getElementById('noBtn');
   const mute = document.getElementById('mute');
-  const music = document.getElementById('bgMusic');
 
   let currentLine = 0;
   let skipped = false;
-  const voicePlayer = new Audio();
 
   function startTrailer() {
     currentLine = 0;
@@ -851,68 +854,41 @@
 
     const item = LINES[currentLine];
 
-    // 1. Вибрация на появление строки
+    // Вибрация на строку
     if (item.vibration) {
       vibrate(item.vibration);
     }
 
-    // 2. Показываем визуальную строку
+    // Показываем строку
     const line = document.createElement('div');
     line.className = 'trailer-line';
     line.textContent = item.text;
     trailerContent.innerHTML = '';
     trailerContent.appendChild(line);
 
-    // 3. Параллельно запускаем озвучку
-    if (item.voice) {
-      voicePlayer.pause();
-      voicePlayer.src = item.voice;
-      voicePlayer.volume = 0.9;
-      voicePlayer.currentTime = 0;
-
-      const playPromise = voicePlayer.play();
-      if (playPromise) playPromise.catch(() => {
-        // Если браузер блокирует — пробуем ещё раз через 100 мс
-        setTimeout(() => voicePlayer.play().catch(() => {}), 100);
-      });
-    }
-
     currentLine++;
     setTimeout(showNextLine, item.delay);
   }
 
   function showFinal() {
-    // Вибрация на финал — двойной удар
     vibrate([60, 50, 100]);
 
-    // Плавно гасим озвучку за 400 мс
-    fadeOutAudio(voicePlayer, 400);
+    // Плавно гасим музыку трейлера
+    fadeOutAudio(trailerMusic, 800);
 
     trailer.style.display = 'none';
     skip.style.display = 'none';
     final.classList.add('visible');
 
-    // === МУЗЫКА СТАРТУЕТ ЗДЕСЬ — ровно в момент появления «Билета» ===
-    // Небольшая задержка, чтобы голос успел затихнуть
+    // === МУЗЫКА ФИНАЛА СТАРТУЕТ С ЗАДЕРЖКОЙ, чтобы трейлерная успела затихнуть
     setTimeout(() => {
-      music.volume = 0;
-      music.currentTime = 0;
-      music.play().catch(() => {});
-
-      // Плавный fade-in громкости до 0.4
-      let vol = 0;
-      const fadeIn = setInterval(() => {
-        vol += 0.02;
-        music.volume = Math.min(vol, 0.4);
-        if (vol >= 0.4) clearInterval(fadeIn);
-      }, 50);
-    }, 400);
+      fadeInAudio(finalMusic, 0.4, 1800);
+    }, 600);
   }
 
   skip.addEventListener('click', () => {
     skipped = true;
     vibrate(30);
-    // showFinal сам сделает fade-out озвучки
     showFinal();
   });
 
@@ -922,14 +898,10 @@
   let muted = false;
   mute.addEventListener('click', () => {
     muted = !muted;
-    music.muted = muted;
-    voicePlayer.muted = muted;
     terminalAmbient.muted = muted;
+    trailerMusic.muted = muted;
+    finalMusic.muted = muted;
     mute.textContent = muted ? '🔊 UNMUTE' : '🔇 MUTE';
-
-    if (!muted && music.paused && final.classList.contains('visible')) {
-      music.play().catch(() => {});
-    }
   });
 
   /* ============================================
