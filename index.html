@@ -638,15 +638,21 @@
   let wrongAttempts = 0;
   let terminalStarted = false;
 
- // Принудительная предзагрузка всех аудио
+// Принудительная предзагрузка всех аудио через fetch — работает надёжнее
+function preloadAudio(url, label) {
+  fetch(url, { cache: 'force-cache' })
+    .then(response => {
+      console.log('Предзагружено:', label, 'статус:', response.status);
+    })
+    .catch(err => {
+      console.warn('Ошибка предзагрузки:', label, err.message);
+    });
+}
+
 setTimeout(() => {
-  [terminalAmbient, trailerMusic, finalMusic].forEach(audio => {
-    if (audio) {
-      audio.preload = 'auto';
-      audio.load();
-      console.log('Предзагрузка:', audio.id);
-    }
-  });
+  preloadAudio('terminal-ambient.mp3', 'terminalAmbient');
+  preloadAudio('Start.mp3', 'trailerMusic');
+  preloadAudio('Finale.mp3', 'finalMusic');
 }, 100);
  
   /* ============================================
