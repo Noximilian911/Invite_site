@@ -601,7 +601,7 @@
     letter-spacing: 0.15em;
     text-transform: uppercase;
     color: #ff0023;
-    text-shadow: 0 0 30px rgba(255, 221, 0, 0.8);
+    text-shadow: 0 0 30px rgba(255, 0, 35, 0.8);
     opacity: 0;
     pointer-events: none;
     transition: opacity 2s ease;
@@ -1305,28 +1305,26 @@ noBtn.addEventListener('click', () => {
   noBtnClicks++;
 
   if (noBtnClicks >= NO_BTN_MAX) {
-    // === Сработало: показываем «фиг тебе» ===
     noBtnClicks = 0;
 
-    // Скрываем кнопку плавно
+    // Скрываем кнопку
     noBtn.style.transition = 'opacity 0.5s, transform 0.5s';
     noBtn.style.opacity = '0';
     noBtn.style.transform = 'scale(0.5)';
     noBtn.classList.add('hidden');
 
-    // Показываем надпись
+    // Показываем «фиг тебе»
     setTimeout(() => {
       noBtnMsg.classList.add('visible');
       vibrate([60, 40, 60]);
     }, 300);
 
-    // Через 2 секунды всё возвращаем
+    // Через 2 секунды надпись затухает — И ВСЁ, кнопка не возвращается
     setTimeout(() => {
       noBtnMsg.classList.remove('visible');
-      }, 2000);
     }, 2300);
+
   } else {
-    // Просто тикаем счётчик — показываем игривую вибрацию
     vibrate([20, 30, 20]);
   }
 });
