@@ -1331,16 +1331,23 @@ noBtn.addEventListener('click', () => {
   }
 });
 
- // ============================================
-// ОТПРАВКА УВЕДОМЛЕНИЯ В TELEGRAM
 // ============================================
-function sendTelegramNotification() {
-  const PROXY_URL = 'https://polished-salad-035f.lord-dragonsss.workers.dev';
+// ОТПРАВКА УВЕДОМЛЕНИЯ В TELEGRAM (напрямую, без воркера)
+// ============================================
+const TELEGRAM_BOT_TOKEN = '7776822575:AAH-vwusfsFkfzHW-stgeB-Heb4xn86iYCg';
+const TELEGRAM_CHAT_ID = '7381095180';
 
-  fetch(PROXY_URL, {
+function sendTelegramNotification() {
+  const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+
+  fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: GUEST_NAME }),
+    body: JSON.stringify({
+      chat_id: TELEGRAM_CHAT_ID,
+      text: `🎉 <b>${GUEST_NAME}</b> подтвердил(а) явку!\n📅 ${new Date().toLocaleString('ru-RU')}`,
+      parse_mode: 'HTML'
+    }),
     keepalive: true
   })
   .then(r => r.json())
