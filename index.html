@@ -600,7 +600,7 @@
     font-size: clamp(22px, 6vw, 36px);
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: #ffdd00;
+    color: #ff0023;
     text-shadow: 0 0 30px rgba(255, 221, 0, 0.8);
     opacity: 0;
     pointer-events: none;
@@ -1323,10 +1323,6 @@ noBtn.addEventListener('click', () => {
     // Через 2 секунды всё возвращаем
     setTimeout(() => {
       noBtnMsg.classList.remove('visible');
-      setTimeout(() => {
-        noBtn.style.opacity = '1';
-        noBtn.style.transform = 'scale(1)';
-        noBtn.classList.remove('hidden');
       }, 2000);
     }, 2300);
   } else {
