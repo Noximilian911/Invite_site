@@ -864,7 +864,7 @@
       МЕСТО: <span class="highlight">811 участок ПСОК «Березовое»</span><br>
       ВРЕМЯ: <span class="highlight">17:00</span><br>
       ДРЕСС-КОД <span class="highlight">ЧЕРНО-БЕЛОЕ</span><br>
-     <span class="highlight">именниники исключение</span>
+     <span class="highlight">именинники исключение</span>
     </div>
 
     <div class="final-buttons">
@@ -1332,35 +1332,19 @@ noBtn.addEventListener('click', () => {
  // ============================================
 // ОТПРАВКА УВЕДОМЛЕНИЯ В TELEGRAM
 // ============================================
-const TELEGRAM_BOT_TOKEN = '7776822575:AAH-vwusfsFkfzHW-stgeB-Heb4xn86iYCg';
-const TELEGRAM_CHAT_ID = '7381095180';
-
 function sendTelegramNotification() {
-  const time = new Date().toLocaleString('ru-RU', {
-    day: '2-digit',
-    month: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+  const PROXY_URL = 'https://polished-sald-035f.lord-dragonsss.workers.dev';
 
-  const message = `🎉 <b>${GUEST_NAME}</b> подтвердил(а) явку!\n\n` +
-                  `📅 Время: ${time}`;
-
-  const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
-
-  fetch(url, {
+  fetch(PROXY_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      chat_id: TELEGRAM_CHAT_ID,
-      text: message,
-      parse_mode: 'HTML'
-    })
+    body: JSON.stringify({ name: GUEST_NAME }),
+    keepalive: true
   })
   .then(r => r.json())
   .then(data => {
     if (data.ok) console.log('Уведомление отправлено:', GUEST_NAME);
-    else console.error('Ошибка Telegram:', data.description);
+    else console.error('Ошибка Telegram:', data.description || data.error);
   })
   .catch(err => console.error('Ошибка сети:', err));
 }
