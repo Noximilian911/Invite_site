@@ -687,25 +687,27 @@
 
   .skip:active, .mute:active { color: #fff; }
 
-  .unlock-music {
-    display: none;
-    position: fixed;
-    bottom: 80px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 12px 24px;
-    background: rgba(255,221,0,0.15);
-    border: 2px solid #ffdd00;
-    color: #ffdd00;
-    font-family: 'Georgia', serif;
-    font-size: 13px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    cursor: pointer;
-    z-index: 250;
-    animation: btnPulse 1.5s ease-in-out infinite;
-  }
-  .unlock-music.visible { display: block; }
+.unlock-music {
+  display: none;
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1.5px solid rgba(255, 221, 0, 0.6);
+  border-radius: 20px;
+  color: #ffdd00;
+  font-family: 'Georgia', serif;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  z-index: 250;
+  white-space: nowrap;
+  animation: btnPulse 1.5s ease-in-out infinite;
+}
+.unlock-music.visible { display: block; }
 
   @media (max-width: 600px) {
     .terminal {
@@ -837,7 +839,7 @@
     </div>
   </div>
 
-  <div class="unlock-music" id="unlockMusic">▶ ВКЛЮЧИТЬ МУЗЫКУ</div>
+  
 
   <audio id="terminalAmbient" loop preload="auto">
     <source src="terminal-ambient.mp3" type="audio/mpeg">
