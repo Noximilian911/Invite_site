@@ -442,6 +442,27 @@
 
   .skip:active, .mute:active { color: #fff; }
 
+  /* Кнопка «Включить музыку» — если автоплей заблокирован */
+  .unlock-music {
+    display: none;
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 24px;
+    background: rgba(255,221,0,0.15);
+    border: 2px solid #ffdd00;
+    color: #ffdd00;
+    font-family: 'Georgia', serif;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    z-index: 250;
+    animation: btnPulse 1.5s ease-in-out infinite;
+  }
+  .unlock-music.visible { display: block; }
+
   @media (max-width: 600px) {
     .terminal {
       padding: 16px;
@@ -536,18 +557,21 @@
   <div class="skip" id="skip">Пропустить ▸</div>
   <div class="mute" id="mute">🔇 MUTE</div>
 
+  <!-- Кнопка разблокировки музыки, если автоплей заблокирован -->
+  <div class="unlock-music" id="unlockMusic">▶ ВКЛЮЧИТЬ МУЗЫКУ</div>
+
   <!-- Фоновый эмбиент терминала -->
-  <audio id="terminalAmbient" loop>
+  <audio id="terminalAmbient" loop preload="auto">
     <source src="terminal-ambient.mp3" type="audio/mpeg">
   </audio>
 
   <!-- Музыка "титров" трейлера -->
-  <audio id="trailerMusic" loop>
+  <audio id="trailerMusic" loop preload="auto">
     <source src="Start.mp3" type="audio/mpeg">
   </audio>
 
   <!-- Музыка финального экрана -->
-  <audio id="finalMusic" loop>
+  <audio id="finalMusic" loop preload="auto">
     <source src="Finale.mp3" type="audio/mpeg">
   </audio>
 
@@ -609,6 +633,7 @@
   const terminalAmbient = document.getElementById('terminalAmbient');
   const trailerMusic = document.getElementById('trailerMusic');
   const finalMusic = document.getElementById('finalMusic');
+  const unlockMusicBtn = document.getElementById('unlockMusic');
 
   let wrongAttempts = 0;
   let terminalStarted = false;
@@ -650,10 +675,25 @@
   }
 
   function fadeInAudio(audioEl, targetVol, duration = 1500, startFrom = 0) {
-    if (!audioEl) return;
+    if (!audioEl) {
+      console.warn('fadeInAudio: элемент не найден');
+      return;
+    }
+    console.log('fadeInAudio:', audioEl.id, 'readyState:', audioEl.readyState);
+
     audioEl.volume = 0;
-    audioEl.currentTime = startFrom;
-    audioEl.play().catch(() => {});
+    try { audioEl.currentTime = startFrom; } catch(e) {}
+
+    const playPromise = audioEl.play();
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        console.log(audioEl.id, 'успешно запущен');
+      }).catch((err) => {
+        console.warn(audioEl.id, 'не удалось запустить:', err.message);
+        // Показываем кнопку разблокировки
+        unlockMusicBtn.classList.add('visible');
+      });
+    }
 
     const steps = 30;
     const stepTime = duration / steps;
@@ -668,6 +708,20 @@
       }
     }, stepTime);
   }
+
+  /* ============================================
+     РАЗБЛОКИРОВКА МУЗЫКИ (если автоплей заблокирован)
+     ============================================ */
+  unlockMusicBtn.addEventListener('click', () => {
+    console.log('Разблокировка музыки вручную');
+    finalMusic.volume = 0.4;
+    finalMusic.play().then(() => {
+      unlockMusicBtn.classList.remove('visible');
+      console.log('Музыка разблокирована и играет');
+    }).catch((err) => {
+      console.warn('Всё равно не запустилась:', err.message);
+    });
+  });
 
   /* ============================================
      КНОПКА ЗАПУСКА ТЕРМИНАЛА
@@ -779,8 +833,7 @@
         startTrailer();
         startGrain();
 
-        // === МУЗЫКА ТРЕЙЛЕРА СТАРТУЕТ ЗДЕСЬ (параллельно с первой строкой)
-        // Небольшая задержка, чтобы глитч "успокоился"
+        // Музыка трейлера
         setTimeout(() => {
           fadeInAudio(trailerMusic, 0.35, 2000);
         }, 500);
@@ -854,12 +907,10 @@
 
     const item = LINES[currentLine];
 
-    // Вибрация на строку
     if (item.vibration) {
       vibrate(item.vibration);
     }
 
-    // Показываем строку
     const line = document.createElement('div');
     line.className = 'trailer-line';
     line.textContent = item.text;
@@ -871,6 +922,7 @@
   }
 
   function showFinal() {
+    console.log('showFinal вызван');
     vibrate([60, 50, 100]);
 
     // Плавно гасим музыку трейлера
@@ -880,8 +932,9 @@
     skip.style.display = 'none';
     final.classList.add('visible');
 
-    // === МУЗЫКА ФИНАЛА СТАРТУЕТ С ЗАДЕРЖКОЙ, чтобы трейлерная успела затихнуть
+    // Музыка финала — с задержкой, чтобы трейлерная затихла
     setTimeout(() => {
+      console.log('Запуск финальной музыки');
       fadeInAudio(finalMusic, 0.4, 1800);
     }, 600);
   }
@@ -918,11 +971,4 @@
   if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
     noBtn.addEventListener('mouseover', () => {
       const x = Math.random() * 200 - 100;
-      const y = Math.random() * 100 - 50;
-      noBtn.style.transform = `translate(${x}px, ${y}px)`;
-    });
-  }
-</script>
-
-</body>
-</html>
+      const y = Math.random() * 
