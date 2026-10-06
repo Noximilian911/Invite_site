@@ -291,6 +291,228 @@
     to { opacity: 1; transform: translateY(0); }
   }
 
+  /* ============================================
+     ЭКРАН С ПИСЬМОМ
+     ============================================ */
+  .letter-screen {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    z-index: 70;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    animation: fadeIn 1s forwards;
+  }
+
+  .letter-screen.visible { display: flex; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .letter-card {
+    position: relative;
+    width: 100%;
+    max-width: 460px;
+    padding: 36px 32px 28px;
+    background: linear-gradient(160deg,
+      rgba(30, 20, 50, 0.85),
+      rgba(15, 10, 30, 0.92));
+    border: 1.5px solid rgba(255, 221, 0, 0.5);
+    border-radius: 12px;
+    box-shadow:
+      0 0 60px rgba(255, 221, 0, 0.15),
+      0 0 120px rgba(255, 100, 200, 0.08),
+      inset 0 0 40px rgba(255, 221, 0, 0.04);
+    text-align: center;
+    font-family: 'Georgia', serif;
+    color: #fff;
+    transform: translateY(30px) scale(0.95);
+    opacity: 0;
+    animation: letterAppear 0.9s 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.2) forwards;
+  }
+
+  @keyframes letterAppear {
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .letter-card::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 14px;
+    background: linear-gradient(135deg,
+      rgba(255, 221, 0, 0.3),
+      rgba(255, 100, 200, 0.2),
+      rgba(100, 200, 255, 0.2));
+    z-index: -1;
+    filter: blur(12px);
+    opacity: 0.7;
+    animation: cardGlow 4s ease-in-out infinite;
+  }
+
+  @keyframes cardGlow {
+    0%, 100% { opacity: 0.5; }
+    50%      { opacity: 0.9; }
+  }
+
+  .letter-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .letter-icon {
+    font-size: 28px;
+    color: #ffdd00;
+    text-shadow: 0 0 20px rgba(255, 221, 0, 0.7);
+    animation: iconFloat 2.5s ease-in-out infinite;
+  }
+
+  @keyframes iconFloat {
+    0%, 100% { transform: translateY(0) rotate(-3deg); }
+    50%      { transform: translateY(-4px) rotate(3deg); }
+  }
+
+  .letter-badge {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: #0a0a0a;
+    background: #ffdd00;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    animation: badgePulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes badgePulse {
+    0%, 100% { box-shadow: 0 0 8px rgba(255, 221, 0, 0.5); }
+    50%      { box-shadow: 0 0 20px rgba(255, 221, 0, 0.9); }
+  }
+
+  .letter-title {
+    font-size: clamp(26px, 6vw, 38px);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #fff;
+    margin-bottom: 16px;
+    text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+  }
+
+  .letter-divider {
+    width: 60px;
+    height: 2px;
+    background: linear-gradient(90deg,
+      transparent, #ffdd00, transparent);
+    margin: 0 auto 20px;
+  }
+
+  .letter-body {
+    font-size: 15px;
+    line-height: 1.8;
+    color: #ccc;
+    margin-bottom: 24px;
+    font-style: italic;
+  }
+
+  .letter-body p {
+    margin-bottom: 8px;
+  }
+
+  .letter-stamp {
+    display: inline-block;
+    padding: 6px 14px;
+    border: 2px solid rgba(255, 100, 100, 0.6);
+    color: rgba(255, 100, 100, 0.85);
+    font-size: 11px;
+    letter-spacing: 4px;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    transform: rotate(-6deg);
+    margin-bottom: 24px;
+    box-shadow: 0 0 15px rgba(255, 100, 100, 0.3);
+    animation: stampTilt 3s ease-in-out infinite;
+  }
+
+  @keyframes stampTilt {
+    0%, 100% { transform: rotate(-6deg); }
+    50%      { transform: rotate(-4deg); }
+  }
+
+  .letter-open-btn {
+    width: 100%;
+    padding: 16px 24px;
+    background: transparent;
+    border: 2px solid #ffdd00;
+    color: #ffdd00;
+    font-family: 'Georgia', serif;
+    font-size: 14px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+    border-radius: 6px;
+  }
+
+  .letter-open-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: #ffdd00;
+    transform: translateX(-100%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: -1;
+  }
+
+  .letter-open-btn:hover,
+  .letter-open-btn:active {
+    color: #0a0a0a;
+    box-shadow: 0 0 30px rgba(255, 221, 0, 0.6);
+  }
+
+  .letter-open-btn:hover::before,
+  .letter-open-btn:active::before {
+    transform: translateX(0);
+  }
+
+  .letter-footer {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 24px;
+  }
+
+  .letter-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 221, 0, 0.4);
+    animation: dotPulse 1.5s ease-in-out infinite;
+  }
+
+  .letter-dot:nth-child(2) { animation-delay: 0.2s; }
+  .letter-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes dotPulse {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50%      { opacity: 1; transform: scale(1.3); }
+  }
+
+  /* ============================================
+     ФИНАЛЬНЫЙ ЭКРАН
+     ============================================ */
   .final {
     position: absolute;
     inset: 0;
@@ -302,18 +524,13 @@
     padding-top: max(24px, env(safe-area-inset-top));
     padding-bottom: max(24px, env(safe-area-inset-bottom));
     text-align: center;
-    z-index: 60;
+    z-index: 80;
     animation: fadeIn 1.5s forwards;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }
 
   .final.visible { display: flex; }
-
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-  }
 
   .final .title {
     font-size: clamp(24px, 8vw, 64px);
@@ -392,7 +609,7 @@
     min-width: 140px;
   }
 
-  #trailerScreen button::before {
+  #trailerScreen .final-buttons button::before {
     content: '';
     position: absolute;
     inset: 0;
@@ -402,21 +619,21 @@
     z-index: -1;
   }
 
-  #trailerScreen button:active { color: #000; }
-  #trailerScreen button:active::before { transform: translateX(0); }
+  #trailerScreen .final-buttons button:active { color: #000; }
+  #trailerScreen .final-buttons button:active::before { transform: translateX(0); }
 
   @media (hover: hover) and (pointer: fine) {
-    #trailerScreen button:hover { color: #000; }
-    #trailerScreen button:hover::before { transform: translateX(0); }
+    #trailerScreen .final-buttons button:hover { color: #000; }
+    #trailerScreen .final-buttons button:hover::before { transform: translateX(0); }
   }
 
-  #trailerScreen button.yes {
+  #trailerScreen .final-buttons button.yes {
     border-color: #ffdd00;
     color: #ffdd00;
   }
-  #trailerScreen button.yes::before { background: #ffdd00; }
-  #trailerScreen button.yes:active { color: #000; }
-  #trailerScreen button.yes:disabled {
+  #trailerScreen .final-buttons button.yes::before { background: #ffdd00; }
+  #trailerScreen .final-buttons button.yes:active { color: #000; }
+  #trailerScreen .final-buttons button.yes:disabled {
     opacity: 0.6;
     cursor: default;
   }
@@ -442,7 +659,6 @@
 
   .skip:active, .mute:active { color: #fff; }
 
-  /* Кнопка «Включить музыку» — если автоплей заблокирован */
   .unlock-music {
     display: none;
     position: fixed;
@@ -486,11 +702,15 @@
     .trailer { padding: 16px; }
     .trailer-line { letter-spacing: 0.1em; }
 
+    .letter-screen { padding: 16px; }
+    .letter-card { padding: 28px 22px 22px; }
+    .letter-body { font-size: 13px; }
+
     .final { padding: 20px 12px; }
     .final .meta { line-height: 1.7; }
     .final-buttons { gap: 10px; }
 
-    #trailerScreen button {
+    #trailerScreen .final-buttons button {
       font-size: 12px;
       padding: 12px 18px;
       min-width: 0;
@@ -505,7 +725,8 @@
     .trailer-line { font-size: 18px; }
     .final .title { font-size: 22px; }
     .rating { font-size: 10px; padding: 5px 10px; }
-    #trailerScreen button { font-size: 11px; }
+    #trailerScreen .final-buttons button { font-size: 11px; }
+    .letter-title { font-size: 22px; }
   }
 
   @media (hover: none) and (pointer: coarse) {
@@ -522,8 +743,11 @@
     .final .title { font-size: 22px; margin-bottom: 12px; }
     .final .meta { font-size: 11px; line-height: 1.5; margin-bottom: 12px; }
     .rating { font-size: 10px; padding: 4px 10px; margin-bottom: 12px; }
-    #trailerScreen button { padding: 10px 16px; font-size: 11px; min-height: 40px; }
+    #trailerScreen .final-buttons button { padding: 10px 16px; font-size: 11px; min-height: 40px; }
     .trailer-line { font-size: 20px; }
+    .letter-card { padding: 20px 18px 16px; }
+    .letter-title { font-size: 20px; margin-bottom: 10px; }
+    .letter-body { font-size: 12px; margin-bottom: 12px; }
   }
 </style>
 </head>
@@ -557,20 +781,45 @@
   <div class="skip" id="skip">Пропустить ▸</div>
   <div class="mute" id="mute">🔇 MUTE</div>
 
-  <!-- Кнопка разблокировки музыки, если автоплей заблокирован -->
+  <!-- Экран с письмом -->
+  <div class="letter-screen" id="letterScreen">
+    <div class="letter-card">
+      <div class="letter-header">
+        <span class="letter-icon">✉</span>
+        <span class="letter-badge">НОВОЕ</span>
+      </div>
+
+      <div class="letter-title">Вам письмо</div>
+
+      <div class="letter-divider"></div>
+
+      <div class="letter-body">
+        <p>Уважаемый гость,</p>
+        <p>Вы приглашены на день рождения. Подробности внутри конверта.</p>
+      </div>
+
+      <div class="letter-stamp">СРОЧНО</div>
+
+      <button class="letter-open-btn" id="openLetterBtn">▶ ОТКРЫТЬ БИЛЕТ</button>
+
+      <div class="letter-footer">
+        <span class="letter-dot"></span>
+        <span class="letter-dot"></span>
+        <span class="letter-dot"></span>
+      </div>
+    </div>
+  </div>
+
   <div class="unlock-music" id="unlockMusic">▶ ВКЛЮЧИТЬ МУЗЫКУ</div>
 
-  <!-- Фоновый эмбиент терминала -->
   <audio id="terminalAmbient" loop preload="auto">
     <source src="terminal-ambient.mp3" type="audio/mpeg">
   </audio>
 
-  <!-- Музыка "титров" трейлера -->
   <audio id="trailerMusic" loop preload="auto">
     <source src="Start.mp3" type="audio/mpeg">
   </audio>
 
-  <!-- Музыка финального экрана -->
   <audio id="finalMusic" loop preload="auto">
     <source src="Finale.mp3" type="audio/mpeg">
   </audio>
@@ -612,7 +861,6 @@
     ''
   ];
 
-  // Строки трейлера: текст, задержка, вибрация на мобилке
   const LINES = [
     { text: 'В этом году...',  delay: 1800, vibration: 30 },
     { text: 'Одна ночь...',    delay: 1800, vibration: 30 },
@@ -634,27 +882,12 @@
   const trailerMusic = document.getElementById('trailerMusic');
   const finalMusic = document.getElementById('finalMusic');
   const unlockMusicBtn = document.getElementById('unlockMusic');
+  const letterScreen = document.getElementById('letterScreen');
+  const openLetterBtn = document.getElementById('openLetterBtn');
 
   let wrongAttempts = 0;
   let terminalStarted = false;
 
-// Принудительная предзагрузка всех аудио через fetch — работает надёжнее
-function preloadAudio(url, label) {
-  fetch(url, { cache: 'force-cache' })
-    .then(response => {
-      console.log('Предзагружено:', label, 'статус:', response.status);
-    })
-    .catch(err => {
-      console.warn('Ошибка предзагрузки:', label, err.message);
-    });
-}
-
-setTimeout(() => {
-  preloadAudio('terminal-ambient.mp3', 'terminalAmbient');
-  preloadAudio('Start.mp3', 'trailerMusic');
-  preloadAudio('Finale.mp3', 'finalMusic');
-}, 100);
- 
   /* ============================================
      ВИБРАЦИЯ
      ============================================ */
@@ -669,365 +902,71 @@ setTimeout(() => {
   /* ============================================
      ПЛАВНОЕ ЗАТУХАНИЕ
      ============================================ */
-  function fadeOutAudio(audioEl, duration = 400, onComplete) {
+  function fadeOutAudio(audioEl, duration = 400, targetVol = 0, onComplete) {
     if (!audioEl || audioEl.paused) {
       if (onComplete) onComplete();
       return;
     }
     const startVol = audioEl.volume;
-    const steps = 20;
-    const stepTime = duration / steps;
-    let step = 0;
-
-    const fade = setInterval(() => {
-      step++;
-      audioEl.volume = Math.max(0, startVol * (1 - step / steps));
-      if (step >= steps) {
-        clearInterval(fade);
-        audioEl.pause();
-        audioEl.volume = startVol;
-        if (onComplete) onComplete();
-      }
-    }, stepTime);
-  }
-
-function fadeInAudio(audioEl, targetVol, duration = 1500, startFrom = 0) {
-  if (!audioEl) {
-    console.warn('fadeInAudio: элемент не найден');
-    return;
-  }
-
-  console.log('fadeInAudio:', audioEl.id, 'readyState:', audioEl.readyState);
-
-  const startPlayback = () => {
-    audioEl.volume = 0;
-    try { audioEl.currentTime = startFrom; } catch (e) {}
-
-    const playPromise = audioEl.play();
-    if (playPromise !== undefined) {
-      playPromise.then(() => {
-        console.log(audioEl.id, 'успешно запущен');
-      }).catch((err) => {
-        console.warn(audioEl.id, 'не удалось запустить:', err.message);
-        unlockMusicBtn.classList.add('visible');
-      });
-    }
-
     const steps = 30;
     const stepTime = duration / steps;
     let step = 0;
 
     const fade = setInterval(() => {
       step++;
-      audioEl.volume = Math.min(targetVol, targetVol * (step / steps));
+      const progress = step / steps;
+      audioEl.volume = Math.max(targetVol, startVol * (1 - progress) + targetVol * progress);
       if (step >= steps) {
-        audioEl.volume = targetVol;
         clearInterval(fade);
+        audioEl.volume = targetVol;
+        if (targetVol === 0) {
+          audioEl.pause();
+          audioEl.volume = startVol;
+        }
+        if (onComplete) onComplete();
       }
     }, stepTime);
-  };
-
-  if (audioEl.readyState >= 3) {
-    console.log(audioEl.id, 'уже загружен, играю сразу');
-    startPlayback();
-    return;
   }
 
-  console.log(audioEl.id, 'не загружен, принудительно гружу...');
-  audioEl.load();
-
-  const timeout = setTimeout(() => {
-    if (audioEl.readyState < 3) {
-      console.log(audioEl.id, 'canplay не пришёл — пробую проиграть из кеша');
-      startPlayback();
+  function fadeInAudio(audioEl, targetVol, duration = 1500, startFrom = 0) {
+    if (!audioEl) {
+      console.warn('fadeInAudio: элемент не найден');
+      return;
     }
-  }, 3000);
+    console.log('fadeInAudio:', audioEl.id, 'readyState:', audioEl.readyState);
 
-  audioEl.addEventListener('canplay', () => {
-    clearTimeout(timeout);
-    startPlayback();
-  }, { once: true });
+    const startPlayback = () => {
+      audioEl.volume = 0;
+      try { audioEl.currentTime = startFrom; } catch (e) {}
 
-  audioEl.addEventListener('error', () => {
-    clearTimeout(timeout);
-    console.warn(audioEl.id, 'ошибка — пробую ещё раз из кеша');
-    // Вторая попытка: пересоздать source и запустить
-    const source = audioEl.querySelector('source');
-    if (source) {
-      audioEl.src = source.src;
-      audioEl.load();
-      audioEl.addEventListener('canplay', startPlayback, { once: true });
-    }
-  }, { once: true });
-}
-
-  /* ============================================
-     РАЗБЛОКИРОВКА МУЗЫКИ (если автоплей заблокирован)
-     ============================================ */
-  unlockMusicBtn.addEventListener('click', () => {
-    console.log('Разблокировка музыки вручную');
-    finalMusic.volume = 0.4;
-    finalMusic.play().then(() => {
-      unlockMusicBtn.classList.remove('visible');
-      console.log('Музыка разблокирована и играет');
-    }).catch((err) => {
-      console.warn('Всё равно не запустилась:', err.message);
-    });
-  });
-
-  /* ============================================
-     КНОПКА ЗАПУСКА ТЕРМИНАЛА
-     ============================================ */
-  startBtn.addEventListener('click', () => {
-    if (terminalStarted) return;
-    terminalStarted = true;
-
-    vibrate(20);
-    startBtn.style.display = 'none';
-
-    // Запускаем эмбиент терминала
-    fadeInAudio(terminalAmbient, 0.25, 1000);
-
-    typeLines(BOOT_LINES, () => {
-      loginScreen.style.display = 'flex';
-      if (window.matchMedia('(hover: hover)').matches) {
-        passwordInput.focus();
+      const playPromise = audioEl.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          console.log(audioEl.id, 'успешно запущен');
+        }).catch((err) => {
+          console.warn(audioEl.id, 'не удалось запустить:', err.message);
+          unlockMusicBtn.classList.add('visible');
+        });
       }
-    });
-  });
 
-  /* ============================================
-     ПЕЧАТЬ
-     ============================================ */
-  function typeLines(lines, callback) {
-    let i = 0;
-    function nextLine() {
-      if (i >= lines.length) {
-        if (callback) callback();
-        return;
-      }
-      const line = document.createElement('div');
-      line.className = 'line cursor';
-      output.appendChild(line);
+      const steps = 30;
+      const stepTime = duration / steps;
+      let step = 0;
 
-      let j = 0;
-      const text = lines[i];
-
-      const interval = setInterval(() => {
-        line.textContent = text.slice(0, j + 1);
-        j++;
-        if (j >= text.length) {
-          clearInterval(interval);
-          line.classList.remove('cursor');
-          i++;
-          setTimeout(nextLine, 180);
+      const fade = setInterval(() => {
+        step++;
+        audioEl.volume = Math.min(targetVol, targetVol * (step / steps));
+        if (step >= steps) {
+          audioEl.volume = targetVol;
+          clearInterval(fade);
         }
-      }, 22);
-    }
-    nextLine();
-  }
+      }, stepTime);
+    };
 
-  /* ============================================
-     ПРОВЕРКА ПАРОЛЯ
-     ============================================ */
-  passwordInput.addEventListener('keydown', (e) => {
-    if (e.key !== 'Enter') return;
-
-    const value = passwordInput.value.trim().toLowerCase();
-    passwordInput.value = '';
-
-    if (value === PASSWORD.toLowerCase()) {
-      vibrate(40);
-      fadeOutAudio(terminalAmbient, 500);
-      triggerTransition();
-    } else {
-      vibrate([40, 60, 40]);
-      wrongAttempts++;
-      const err = document.createElement('div');
-      err.className = 'line error';
-
-      if (wrongAttempts === 1) {
-        err.textContent = '> НЕВЕРНЫЙ ПАРОЛЬ. ПОПРОБУЙ ЕЩЁ РАЗ.';
-      } else if (wrongAttempts === 2) {
-        err.textContent = '> ОПЯТЬ НЕВЕРНО. ТЫ УВЕРЕН, ЧТО ТЕБЯ ЗВАЛИ?';
-      } else if (wrongAttempts === 3) {
-        err.textContent = '> ДА ТЫ ЗАЕБАЛ. ПОДСКАЗКА: ЭТО СВЯЗАНО С ПОВОДОМ.';
-      } else {
-        err.textContent = `> ВСЁ, Я УСТАЛ. ПАРОЛЬ: "${PASSWORD}". ВВОДИ.`;
-      }
-
-      output.appendChild(err);
-      err.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-  });
-
-  /* ============================================
-     ПЕРЕХОД
-     ============================================ */
-  function triggerTransition() {
-    const ok = document.createElement('div');
-    ok.className = 'line';
-    ok.style.color = '#33ff33';
-    ok.textContent = '> ДОСТУП РАЗРЕШЁН. ЗАГРУЗКА ФАЙЛА...';
-    output.appendChild(ok);
-
-    loginScreen.style.display = 'none';
-
-    setTimeout(() => {
-      glitchOverlay.classList.add('active');
-      terminalScreen.classList.add('fade-out');
-
-      setTimeout(() => {
-        terminalScreen.style.display = 'none';
-        glitchOverlay.classList.remove('active');
-        document.getElementById('trailerScreen').classList.add('visible');
-
-        startTrailer();
-        startGrain();
-
-        // Музыка трейлера
-        setTimeout(() => {
-          fadeInAudio(trailerMusic, 0.35, 2000);
-        }, 500);
-      }, 900);
-    }, 1200);
-  }
-
-  /* ============================================
-     ЗЕРНО
-     ============================================ */
-  const grainCanvas = document.getElementById('grainCanvas');
-  const gctx = grainCanvas.getContext('2d', { alpha: true });
-  let grainRunning = false;
-  let grainFrame = 0;
-
-  function resizeGrain() {
-    const scale = window.innerWidth < 700 ? 2 : 1;
-    grainCanvas.width = Math.floor(window.innerWidth / scale);
-    grainCanvas.height = Math.floor(window.innerHeight / scale);
-    grainCanvas.style.imageRendering = 'pixelated';
-  }
-  resizeGrain();
-  window.addEventListener('resize', resizeGrain);
-  window.addEventListener('orientationchange', () => setTimeout(resizeGrain, 200));
-
-  function drawGrain() {
-    if (!grainRunning) return;
-    grainFrame++;
-    if (grainFrame % 2 === 0) {
-      const w = grainCanvas.width;
-      const h = grainCanvas.height;
-      const imageData = gctx.createImageData(w, h);
-      const data = imageData.data;
-      for (let i = 0; i < data.length; i += 4) {
-        const v = Math.random() * 255;
-        data[i] = v; data[i + 1] = v; data[i + 2] = v; data[i + 3] = 255;
-      }
-      gctx.putImageData(imageData, 0, 0);
-    }
-    requestAnimationFrame(drawGrain);
-  }
-  function startGrain() { if (grainRunning) return; grainRunning = true; drawGrain(); }
-
-  /* ============================================
-     ТРЕЙЛЕР
-     ============================================ */
-  const trailerContent = document.getElementById('trailerContent');
-  const trailer = document.getElementById('trailer');
-  const final = document.getElementById('final');
-  const skip = document.getElementById('skip');
-  const yesBtn = document.getElementById('yesBtn');
-  const noBtn = document.getElementById('noBtn');
-  const mute = document.getElementById('mute');
-
-  let currentLine = 0;
-  let skipped = false;
-
-  function startTrailer() {
-    currentLine = 0;
-    skipped = false;
-    setTimeout(showNextLine, 800);
-  }
-
-  function showNextLine() {
-    if (skipped) return;
-
-    if (currentLine >= LINES.length) {
-      showFinal();
+    if (audioEl.readyState >= 3) {
+      console.log(audioEl.id, 'уже загружен, играю сразу');
+      startPlayback();
       return;
     }
 
-    const item = LINES[currentLine];
-
-    if (item.vibration) {
-      vibrate(item.vibration);
-    }
-
-    const line = document.createElement('div');
-    line.className = 'trailer-line';
-    line.textContent = item.text;
-    trailerContent.innerHTML = '';
-    trailerContent.appendChild(line);
-
-    currentLine++;
-    setTimeout(showNextLine, item.delay);
-  }
-
-  function showFinal() {
-    console.log('showFinal вызван');
-    vibrate([60, 50, 100]);
-
-    // Плавно гасим музыку трейлера
-    fadeOutAudio(trailerMusic, 800);
-
-    trailer.style.display = 'none';
-    skip.style.display = 'none';
-    final.classList.add('visible');
-
-    // Музыка финала — с задержкой, чтобы трейлерная затихла
-    setTimeout(() => {
-      console.log('Запуск финальной музыки');
-      fadeInAudio(finalMusic, 0.4, 1800);
-    }, 600);
-  }
-
-  skip.addEventListener('click', () => {
-    skipped = true;
-    vibrate(30);
-    showFinal();
-  });
-
-  /* ============================================
-     MUTE
-     ============================================ */
-  let muted = false;
-  mute.addEventListener('click', () => {
-    muted = !muted;
-    terminalAmbient.muted = muted;
-    trailerMusic.muted = muted;
-    finalMusic.muted = muted;
-    mute.textContent = muted ? '🔊 UNMUTE' : '🔇 MUTE';
-  });
-
-  /* ============================================
-     КНОПКИ ФИНАЛА
-     ============================================ */
-  yesBtn.addEventListener('click', () => {
-    vibrate([30, 30, 30]);
-    yesBtn.textContent = '✓ Билет забронирован';
-    yesBtn.disabled = true;
-    yesBtn.style.opacity = '0.7';
-    // window.open('https://t.me/username', '_blank');
-  });
-
-  if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-    noBtn.addEventListener('mouseover', () => {
-      const x = Math.random() * 200 - 100;
-      const y = Math.random() * 100 - 50;
-      noBtn.style.transform = `translate(${x}px, ${y}px)`;
-    });
-  }
-</script>
- 
-</body>
-</html>
+    console.log(audioEl.id, 'не загружен, при
