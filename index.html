@@ -591,6 +591,34 @@
     max-width: 420px;
   }
 
+  #noBtnMsg {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Georgia', serif;
+    font-size: clamp(22px, 6vw, 36px);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #ffdd00;
+    text-shadow: 0 0 30px rgba(255, 221, 0, 0.8);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+    z-index: 100;
+    white-space: nowrap;
+}
+
+  #noBtnMsg.visible {
+    opacity: 1;
+    animation: noBtnMsgPulse 0.6s ease-in-out infinite;
+}
+
+  @keyframes noBtnMsgPulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50%      { transform: translate(-50%, -50%) scale(1.05); }
+}
+ 
   #trailerScreen .final-buttons button {
     background: transparent;
     border: 2px solid #fff;
@@ -825,17 +853,17 @@
 
   <div class="final" id="final">
     <div class="rating">
-      РЕЙТИНГ <span class="age">3+</span> ЖАНР: КОМЕДИЯ, ВЕЧЕРИНКА
+      РЕЙТИНГ <span class="age">16+</span> ЖАНР: КОМЕДИЯ, ВЕЧЕРИНКА
     </div>
 
     <div class="title">День рождения</div>
 
     <div class="meta">
-      В ГЛАВНОЙ РОЛИ: <span class="highlight">[ИМЯ]</span><br>
-      ДАТА ПРЕМЬЕРЫ: <span class="highlight">[ДД.ММ.ГГГГ]</span><br>
-      МЕСТО: <span class="highlight">[АДРЕС]</span><br>
-      ВРЕМЯ: <span class="highlight">[ЧЧ:ММ]</span><br>
-      ДРЕСС-КОД <span class="highlight">[КАКОЙ ТО]</span>
+      В ГЛАВНЫХ РОЛЯХ: <span class="highlight">ПЕТРОВ ДАНИЛ И ВРОДЕ КАРИНА</span><br>
+      ДАТА ПРЕМЬЕРЫ: <span class="highlight">31.10.2026</span><br>
+      МЕСТО: <span class="highlight">КАКОЕ ТО</span><br>
+      ВРЕМЯ: <span class="highlight">НЕ УТРОМ</span><br>
+      ДРЕСС-КОД <span class="highlight">ЧТО ТО КРОМЕ ТРУСОВ ЕЩЕ</span>
     </div>
 
     <div class="final-buttons">
@@ -1237,13 +1265,57 @@
     yesBtn.style.opacity = '0.7';
   });
 
-  if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-    noBtn.addEventListener('mouseover', () => {
-      const x = Math.random() * 200 - 100;
-      const y = Math.random() * 100 - 50;
-      noBtn.style.transform = `translate(${x}px, ${y}px)`;
-    });
+  const noBtnMsg = document.getElementById('noBtnMsg');
+let noBtnClicks = 0;
+const NO_BTN_MAX = 2; // сколько раз надо нажать, чтобы выпало «фиг тебе»
+
+// Убегание от курсора (только на устройствах с мышью)
+if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+  noBtn.addEventListener('mouseover', () => {
+    if (noBtn.classList.contains('hidden')) return;
+    const x = Math.random() * 400 - 200;
+    const y = Math.random() * 200 - 100;
+    noBtn.style.transform = `translate(${x}px, ${y}px)`;
+  });
+}
+
+// Клик по «Не приду»
+noBtn.addEventListener('click', () => {
+  if (noBtn.classList.contains('hidden')) return;
+
+  vibrate(40);
+  noBtnClicks++;
+
+  if (noBtnClicks >= NO_BTN_MAX) {
+    // === Сработало: показываем «фиг тебе» ===
+    noBtnClicks = 0;
+
+    // Скрываем кнопку плавно
+    noBtn.style.transition = 'opacity 0.5s, transform 0.5s';
+    noBtn.style.opacity = '0';
+    noBtn.style.transform = 'scale(0.5)';
+    noBtn.classList.add('hidden');
+
+    // Показываем надпись
+    setTimeout(() => {
+      noBtnMsg.classList.add('visible');
+      vibrate([60, 40, 60]);
+    }, 300);
+
+    // Через 2 секунды всё возвращаем
+    setTimeout(() => {
+      noBtnMsg.classList.remove('visible');
+      setTimeout(() => {
+        noBtn.style.opacity = '1';
+        noBtn.style.transform = 'scale(1)';
+        noBtn.classList.remove('hidden');
+      }, 400);
+    }, 2300);
+  } else {
+    // Просто тикаем счётчик — показываем игривую вибрацию
+    vibrate([20, 30, 20]);
   }
+});
 </script>
 
 </body>
