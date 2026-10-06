@@ -861,9 +861,10 @@
     <div class="meta">
       В ГЛАВНЫХ РОЛЯХ: <span class="highlight">ПЕТРОВ ДАНИЛ И ВРОДЕ КАРИНА</span><br>
       ДАТА ПРЕМЬЕРЫ: <span class="highlight">31.10.2026</span><br>
-      МЕСТО: <span class="highlight">КАКОЕ ТО</span><br>
-      ВРЕМЯ: <span class="highlight">НЕ УТРОМ</span><br>
-      ДРЕСС-КОД <span class="highlight">ЧТО ТО КРОМЕ ТРУСОВ ЕЩЕ</span>
+      МЕСТО: <span class="highlight">811 участок ПСОК «Березовое»</span><br>
+      ВРЕМЯ: <span class="highlight">17:00</span><br>
+      ДРЕСС-КОД <span class="highlight">ЧЕРНО-БЕЛОЕ</span><br>
+     <span class="highlight">именниники исключение</span>
     </div>
 
     <div class="final-buttons">
@@ -877,9 +878,9 @@
   const PASSWORD = 'днюха';
 
   const BOOT_LINES = [
-    '> INITIALIZING SYSTEM...',
-    '> CONNECTING TO SECURE SERVER...',
-    '> SCANNING ACCESS CREDENTIALS...',
+    '> ЗАПУСК СИСТЕМЫ...',
+    '> ПОДКЛЮЧЕНИЕ К ЗАЩИЩЕННОМУ СЕРВЕРУ...',
+    '> ПРОВЕРКА ДОСТУПА...',
     '',
     '> ДОСТУП К СЕКРЕТНЫМ ФАЙЛАМ ЗАПРЕЩЁН.',
     '> ТРЕБУЕТСЯ АВТОРИЗАЦИЯ.',
@@ -1143,6 +1144,21 @@
     }, 1200);
   }
 
+ // ============================================
+// ИМЯ ГОСТЯ ИЗ URL
+// ============================================
+function getGuestName() {
+  const params = new URLSearchParams(window.location.search);
+  const name = params.get('guest');
+  if (name) {
+    // Убираем лишние символы, ограничиваем длину
+    return name.replace(/[<>]/g, '').slice(0, 40);
+  }
+  return 'Неизвестный гость';
+}
+
+const GUEST_NAME = getGuestName();
+console.log('Имя гостя:', GUEST_NAME);
   const grainCanvas = document.getElementById('grainCanvas');
   const gctx = grainCanvas.getContext('2d', { alpha: true });
   let grainRunning = false;
@@ -1263,11 +1279,12 @@
     yesBtn.textContent = '✓ Билет забронирован';
     yesBtn.disabled = true;
     yesBtn.style.opacity = '0.7';
+    sendTelegramNotification();
   });
 
   const noBtnMsg = document.getElementById('noBtnMsg');
 let noBtnClicks = 0;
-const NO_BTN_MAX = 2; // сколько раз надо нажать, чтобы выпало «фиг тебе»
+const NO_BTN_MAX = 2;
 
 // Убегание от курсора (только на устройствах с мышью)
 if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
@@ -1316,6 +1333,42 @@ noBtn.addEventListener('click', () => {
     vibrate([20, 30, 20]);
   }
 });
+
+ // ============================================
+// ОТПРАВКА УВЕДОМЛЕНИЯ В TELEGRAM
+// ============================================
+const TELEGRAM_BOT_TOKEN = '7776822575:AAH-vwusfsFkfzHW-stgeB-Heb4xn86iYCg';
+const TELEGRAM_CHAT_ID = '@Petdanbot';
+
+function sendTelegramNotification() {
+  const time = new Date().toLocaleString('ru-RU', {
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+
+  const message = `🎉 <b>${GUEST_NAME}</b> подтвердил(а) явку!\n\n` +
+                  `📅 Время: ${time}`;
+
+  const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+
+  fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      chat_id: TELEGRAM_CHAT_ID,
+      text: message,
+      parse_mode: 'HTML'
+    })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.ok) console.log('Уведомление отправлено:', GUEST_NAME);
+    else console.error('Ошибка Telegram:', data.description);
+  })
+  .catch(err => console.error('Ошибка сети:', err));
+}
 </script>
 
 </body>
