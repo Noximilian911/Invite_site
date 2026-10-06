@@ -674,15 +674,18 @@
     }, stepTime);
   }
 
-  function fadeInAudio(audioEl, targetVol, duration = 1500, startFrom = 0) {
-    if (!audioEl) {
-      console.warn('fadeInAudio: элемент не найден');
-      return;
-    }
-    console.log('fadeInAudio:', audioEl.id, 'readyState:', audioEl.readyState);
+function fadeInAudio(audioEl, targetVol, duration = 1500, startFrom = 0) {
+  if (!audioEl) {
+    console.warn('fadeInAudio: элемент не найден');
+    return;
+  }
 
+  console.log('fadeInAudio:', audioEl.id, 'readyState:', audioEl.readyState);
+
+  // Функция, которая реально запускает воспроизведение и fade
+  const startPlayback = () => {
     audioEl.volume = 0;
-    try { audioEl.currentTime = startFrom; } catch(e) {}
+    try { audioEl.currentTime = startFrom; } catch (e) {}
 
     const playPromise = audioEl.play();
     if (playPromise !== undefined) {
@@ -690,7 +693,6 @@
         console.log(audioEl.id, 'успешно запущен');
       }).catch((err) => {
         console.warn(audioEl.id, 'не удалось запустить:', err.message);
-        // Показываем кнопку разблокировки
         unlockMusicBtn.classList.add('visible');
       });
     }
@@ -707,7 +709,22 @@
         clearInterval(fade);
       }
     }, stepTime);
+  };
+
+  // Если файл уже загружен — играем сразу
+  if (audioEl.readyState >= 3) {
+    startPlayback();
+    return;
   }
+
+  // Иначе — принудительно запускаем загрузку и ждём canplay
+  audioEl.load();
+  audioEl.addEventListener('canplaythrough', startPlayback, { once: true });
+  audioEl.addEventListener('canplay', startPlayback, { once: true });
+  audioEl.addEventListener('error', () => {
+    console.error(audioEl.id, 'ошибка загрузки файла');
+  }, { once: true });
+}
 
   /* ============================================
      РАЗБЛОКИРОВКА МУЗЫКИ (если автоплей заблокирован)
