@@ -699,7 +699,6 @@ function fadeInAudio(audioEl, targetVol, duration = 1500, startFrom = 0) {
 
   console.log('fadeInAudio:', audioEl.id, 'readyState:', audioEl.readyState);
 
-  // Функция, которая реально запускает воспроизведение и fade
   const startPlayback = () => {
     audioEl.volume = 0;
     try { audioEl.currentTime = startFrom; } catch (e) {}
@@ -728,17 +727,46 @@ function fadeInAudio(audioEl, targetVol, duration = 1500, startFrom = 0) {
     }, stepTime);
   };
 
-  // Если файл уже загружен — играем сразу
   if (audioEl.readyState >= 3) {
+    console.log(audioEl.id, 'уже загружен, играю сразу');
     startPlayback();
     return;
   }
 
-  // Иначе — принудительно запускаем загрузку и ждём canplay
+  console.log(audioEl.id, 'не загружен, принудительно гружу...');
   audioEl.load();
-  audioEl.addEventListener('canplaythrough', startPlayback, { once: true });
-  audioEl.addEventListener('canplay', startPlayback, { once: true });
+
+  // Фолбэк: если через 3 секунды canplay не пришёл — качаем через fetch
+  const timeout = setTimeout(() => {
+    if (audioEl.readyState < 3) {
+      console.log(audioEl.id, 'canplay не пришёл, пробую fetch');
+      const source = audioEl.querySelector('source');
+      if (!source) {
+        console.warn(audioEl.id, 'нет source, играю как есть');
+        startPlayback();
+        return;
+      }
+      fetch(source.src)
+        .then(r => r.blob())
+        .then(blob => {
+          console.log(audioEl.id, 'fetch успешен, blob получен');
+          audioEl.src = URL.createObjectURL(blob);
+          startPlayback();
+        })
+        .catch(() => {
+          console.warn(audioEl.id, 'fetch не помог, пробую играть напрямую');
+          startPlayback();
+        });
+    }
+  }, 3000);
+
+  audioEl.addEventListener('canplay', () => {
+    clearTimeout(timeout);
+    startPlayback();
+  }, { once: true });
+
   audioEl.addEventListener('error', () => {
+    clearTimeout(timeout);
     console.error(audioEl.id, 'ошибка загрузки файла');
   }, { once: true });
 }
