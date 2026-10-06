@@ -638,6 +638,17 @@
   let wrongAttempts = 0;
   let terminalStarted = false;
 
+ // Принудительная предзагрузка всех аудио
+setTimeout(() => {
+  [terminalAmbient, trailerMusic, finalMusic].forEach(audio => {
+    if (audio) {
+      audio.preload = 'auto';
+      audio.load();
+      console.log('Предзагрузка:', audio.id);
+    }
+  });
+}, 100);
+ 
   /* ============================================
      ВИБРАЦИЯ
      ============================================ */
