@@ -687,27 +687,6 @@
 
   .skip:active, .mute:active { color: #fff; }
 
-.unlock-music {
-  display: none;
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 8px 16px;
-  background: rgba(0, 0, 0, 0.7);
-  border: 1.5px solid rgba(255, 221, 0, 0.6);
-  border-radius: 20px;
-  color: #ffdd00;
-  font-family: 'Georgia', serif;
-  font-size: 11px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  cursor: pointer;
-  z-index: 250;
-  white-space: nowrap;
-  animation: btnPulse 1.5s ease-in-out infinite;
-}
-.unlock-music.visible { display: block; }
 
   @media (max-width: 600px) {
     .terminal {
@@ -907,7 +886,6 @@
   const terminalAmbient = document.getElementById('terminalAmbient');
   const trailerMusic = document.getElementById('trailerMusic');
   const finalMusic = document.getElementById('finalMusic');
-  const unlockMusicBtn = document.getElementById('unlockMusic');
   const letterScreen = document.getElementById('letterScreen');
   const openLetterBtn = document.getElementById('openLetterBtn');
 
@@ -965,7 +943,6 @@
           console.log(audioEl.id, 'успешно запущен');
         }).catch((err) => {
           console.warn(audioEl.id, 'не удалось запустить:', err.message);
-          unlockMusicBtn.classList.add('visible');
         });
       }
 
@@ -1031,17 +1008,6 @@
     preloadAudio('Start.mp3', 'trailerMusic');
     preloadAudio('Finale.mp3', 'finalMusic');
   }, 100);
-
-  unlockMusicBtn.addEventListener('click', () => {
-    console.log('Разблокировка музыки вручную');
-    finalMusic.volume = 0.4;
-    finalMusic.play().then(() => {
-      unlockMusicBtn.classList.remove('visible');
-      console.log('Музыка разблокирована и играет');
-    }).catch((err) => {
-      console.warn('Всё равно не запустилась:', err.message);
-    });
-  });
 
   startBtn.addEventListener('click', () => {
     if (terminalStarted) return;
