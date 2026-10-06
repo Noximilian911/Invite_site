@@ -781,7 +781,6 @@
   <div class="skip" id="skip">Пропустить ▸</div>
   <div class="mute" id="mute">🔇 MUTE</div>
 
-  <!-- Экран с письмом -->
   <div class="letter-screen" id="letterScreen">
     <div class="letter-card">
       <div class="letter-header">
@@ -846,9 +845,6 @@
 </div>
 
 <script>
-  /* ============================================
-     НАСТРОЙКИ
-     ============================================ */
   const PASSWORD = 'днюха';
 
   const BOOT_LINES = [
@@ -869,9 +865,6 @@
     { text: 'Скоро...',        delay: 2800, vibration: [80, 40, 80] }
   ];
 
-  /* ============================================
-     ЭЛЕМЕНТЫ
-     ============================================ */
   const output = document.getElementById('output');
   const startBtn = document.getElementById('startBtn');
   const loginScreen = document.getElementById('loginScreen');
@@ -888,9 +881,6 @@
   let wrongAttempts = 0;
   let terminalStarted = false;
 
-  /* ============================================
-     ВИБРАЦИЯ
-     ============================================ */
   const canVibrate = ('vibrate' in navigator);
   function vibrate(pattern) {
     if (!canVibrate) return;
@@ -899,9 +889,6 @@
     }
   }
 
-  /* ============================================
-     ПЛАВНОЕ ЗАТУХАНИЕ
-     ============================================ */
   function fadeOutAudio(audioEl, duration = 400, targetVol = 0, onComplete) {
     if (!audioEl || audioEl.paused) {
       if (onComplete) onComplete();
@@ -996,9 +983,6 @@
     }, { once: true });
   }
 
-  /* ============================================
-     ПРЕДЗАГРУЗКА
-     ============================================ */
   function preloadAudio(url, label) {
     fetch(url, { cache: 'force-cache' })
       .then(response => {
@@ -1015,9 +999,6 @@
     preloadAudio('Finale.mp3', 'finalMusic');
   }, 100);
 
-  /* ============================================
-     РАЗБЛОКИРОВКА МУЗЫКИ
-     ============================================ */
   unlockMusicBtn.addEventListener('click', () => {
     console.log('Разблокировка музыки вручную');
     finalMusic.volume = 0.4;
@@ -1029,9 +1010,6 @@
     });
   });
 
-  /* ============================================
-     КНОПКА ЗАПУСКА ТЕРМИНАЛА
-     ============================================ */
   startBtn.addEventListener('click', () => {
     if (terminalStarted) return;
     terminalStarted = true;
@@ -1049,9 +1027,6 @@
     });
   });
 
-  /* ============================================
-     ПЕЧАТЬ
-     ============================================ */
   function typeLines(lines, callback) {
     let i = 0;
     function nextLine() {
@@ -1080,9 +1055,6 @@
     nextLine();
   }
 
-  /* ============================================
-     ПРОВЕРКА ПАРОЛЯ
-     ============================================ */
   passwordInput.addEventListener('keydown', (e) => {
     if (e.key !== 'Enter') return;
 
@@ -1114,9 +1086,6 @@
     }
   });
 
-  /* ============================================
-     ПЕРЕХОД
-     ============================================ */
   function triggerTransition() {
     const ok = document.createElement('div');
     ok.className = 'line';
@@ -1145,9 +1114,6 @@
     }, 1200);
   }
 
-  /* ============================================
-     ЗЕРНО
-     ============================================ */
   const grainCanvas = document.getElementById('grainCanvas');
   const gctx = grainCanvas.getContext('2d', { alpha: true });
   let grainRunning = false;
@@ -1181,9 +1147,6 @@
   }
   function startGrain() { if (grainRunning) return; grainRunning = true; drawGrain(); }
 
-  /* ============================================
-     ТРЕЙЛЕР
-     ============================================ */
   const trailerContent = document.getElementById('trailerContent');
   const trailer = document.getElementById('trailer');
   const final = document.getElementById('final');
@@ -1225,14 +1188,10 @@
     setTimeout(showNextLine, item.delay);
   }
 
-  /* ============================================
-     ЭКРАН С ПИСЬМОМ
-     ============================================ */
   function showLetter() {
     console.log('showLetter вызван');
     vibrate([80, 40, 80]);
 
-    // Плавно гасим трейлерную музыку до 0.08 за 2 секунды
     fadeOutAudio(trailerMusic, 2000, 0.08);
 
     trailer.style.display = 'none';
@@ -1240,40 +1199,27 @@
     letterScreen.classList.add('visible');
   }
 
-  /* ============================================
-     КЛИК ПО КНОПКЕ "ОТКРЫТЬ БИЛЕТ"
-     ============================================ */
   openLetterBtn.addEventListener('click', () => {
     console.log('Кнопка "Открыть билет" нажата');
     vibrate(50);
 
-    // Скрываем письмо
     letterScreen.classList.remove('visible');
 
-    // Плавно гасим трейлерную музыку полностью за 1.5 сек
     fadeOutAudio(trailerMusic, 1500, 0);
 
-    // Показываем финал
     final.classList.add('visible');
 
-    // Запускаем финальную музыку с fade-in (теперь это возможно благодаря клику)
     setTimeout(() => {
       fadeInAudio(finalMusic, 0.4, 1800);
     }, 400);
   });
 
-  /* ============================================
-     SKIP (пропустить трейлер)
-     ============================================ */
   skip.addEventListener('click', () => {
     skipped = true;
     vibrate(30);
     showLetter();
   });
 
-  /* ============================================
-     MUTE
-     ============================================ */
   let muted = false;
   mute.addEventListener('click', () => {
     muted = !muted;
@@ -1283,9 +1229,6 @@
     mute.textContent = muted ? '🔊 UNMUTE' : '🔇 MUTE';
   });
 
-  /* ============================================
-     КНОПКИ ФИНАЛА
-     ============================================ */
   yesBtn.addEventListener('click', () => {
     vibrate([30, 30, 30]);
     yesBtn.textContent = '✓ Билет забронирован';
